@@ -1,70 +1,118 @@
 # Quantitative Statistical Arbitrage Engine
 
-A professional quantitative trading and statistical arbitrage research framework focused on mean-reversion strategies, spread analysis, portfolio analytics, and risk-adjusted backtesting.
+A professional quantitative trading and statistical arbitrage research framework focused on market-neutral trading, mean-reversion strategies, spread analytics, rolling z-score modeling, and institutional-grade quantitative visualization.
 
-This project implements statistical arbitrage methodologies using z-score based signal generation, rolling spread calculations, portfolio risk management, and interactive visualization tools for financial market research.
+The platform integrates real-time market data pipelines, statistical spread analysis, portfolio analytics, risk-adjusted performance evaluation, and interactive Streamlit-based execution monitoring for quantitative finance research.
+
+---
+
+# Live Interactive Dashboard
+
+🚀 Streamlit Deployment:
+
+https://quant-stat-arbitrage-engine-bdiyzezufnyutjujtlpgwq.streamlit.app/
 
 ---
 
 # Overview
 
-The Quantitative Statistical Arbitrage Engine is designed to simulate and evaluate market-neutral trading strategies using statistical relationships between correlated assets.
+The Quantitative Statistical Arbitrage Engine is designed to simulate and evaluate institutional-style statistical arbitrage workflows using correlated asset relationships and quantitative trading methodologies.
 
-The framework includes:
+The framework performs:
 
-- Statistical arbitrage and pairs trading workflows
+- Real-time statistical spread analysis
 - Mean-reversion signal generation
-- Rolling z-score analysis
-- Portfolio analytics and risk evaluation
-- Historical market data processing
-- Interactive dashboard visualization
-- Research-oriented notebook experimentation
+- Rolling z-score monitoring
+- Correlation and spread diagnostics
+- Risk-adjusted portfolio analytics
+- Hyperparameter optimization analysis
+- Interactive quantitative visualization
+- Institutional trading dashboard monitoring
 
-The repository is structured to resemble a modular quantitative research environment commonly used in systematic trading and hedge fund workflows.
+The repository architecture resembles a modular quantitative research and trading environment commonly used in systematic hedge fund and proprietary trading workflows.
 
 ---
 
 # Features
 
-## Statistical Arbitrage Strategies
-- Mean-reversion trading models
-- Spread-based trading signals
+## Statistical Arbitrage Infrastructure
+
+- Mean-reversion strategy modeling
+- Statistical spread analysis
 - Rolling z-score calculations
-- Pair selection workflows
-- Cointegration-focused research utilities
+- Cointegrated pair evaluation
+- Multi-strategy execution framework
+- Kalman filter inspired strategy simulation
+- Spread distribution monitoring
+
+---
+
+## Real-Time Market Analytics
+
+- Live market data integration using Yahoo Finance
+- Dynamic spread monitoring
+- Real-time return calculations
+- Rolling volatility analysis
+- Cross-asset correlation monitoring
+- Dynamic execution confidence scoring
+
+---
 
 ## Portfolio Analytics
-- Sharpe Ratio analysis
-- Annualized return calculations
-- Drawdown monitoring
-- Volatility analytics
-- Risk-adjusted performance metrics
+
+- Annualized return analysis
+- Sharpe ratio computation
+- Sortino ratio analytics
+- Volatility estimation
+- Win-rate tracking
+- Correlation diagnostics
+- Risk-adjusted performance evaluation
+
+---
 
 ## Risk Management
-- Stop-loss management
-- Portfolio exposure monitoring
-- Capital allocation utilities
-- Portfolio turnover analytics
-- Risk threshold configuration
+
+- Conservative / Balanced / Aggressive execution modes
+- Rolling lookback optimization
+- Volatility-aware execution metrics
+- Statistical exposure monitoring
+- Risk-adjusted spread modeling
+- Dynamic execution profile simulation
+
+---
 
 ## Data Processing
+
 - Historical market data ingestion
-- Equity dataset management
-- CSV-based research workflows
-- Quantitative preprocessing utilities
+- CSV-based quantitative workflows
+- Research dataset management
+- Statistical preprocessing utilities
+- Dynamic portfolio metric computation
+
+---
 
 ## Visualization
-- Equity curve plotting
-- Cumulative return visualization
-- Portfolio analytics charts
-- Rolling spread visualization
-- Dashboard-based monitoring
 
-## Interactive Dashboard
-- Streamlit trading dashboard
-- Strategy parameter controls
-- Portfolio analytics overview
-- Interactive visualization panels
+- Institutional-grade Streamlit dashboard
+- Interactive equity curve visualization
+- Spread return distribution charts
+- Correlation heatmaps
+- Strategy comparison analytics
+- Quantitative diagnostics panels
+
+---
+
+## Interactive Trading Dashboard
+
+The dashboard includes:
+
+- Real-time market-connected statistical arbitrage terminal
+- Dynamic trading pair selection
+- Execution strategy controls
+- Rolling window optimization
+- Portfolio analytics monitoring
+- Institutional execution signal dashboard
+- Hyperparameter optimization visualization
 
 ---
 
@@ -73,15 +121,16 @@ The repository is structured to resemble a modular quantitative research environ
 ```bash
 quant-stat-arbitrage-engine/
 │
-├── analytics/              # Performance and risk analytics modules
-├── dashboard/              # Streamlit dashboard application
-├── datasets/               # Historical datasets and trading outputs
-├── market_data/            # Historical equity market data
-├── notebooks/              # Research and experimentation notebooks
-├── risk_management/        # Portfolio risk management utilities
-├── visualization/          # Visualization and charting tools
-├── reports/                # Quantitative research notes
-├── configs/                # Configuration and parameter settings
+├── analytics/              # Performance and risk analytics
+├── configs/                # Configuration files
+├── dashboard/              # Streamlit dashboard frontend
+├── datasets/               # Quantitative datasets and outputs
+├── market_data/            # Historical market datasets
+├── notebooks/              # Research notebooks
+├── reports/                # Research reports and documentation
+├── risk_management/        # Risk control modules
+├── strategies/             # Trading strategy research
+├── visualization/          # Visualization utilities
 ├── requirements.txt        # Python dependencies
 └── README.md
 ```
@@ -91,21 +140,29 @@ quant-stat-arbitrage-engine/
 # Technologies Used
 
 ## Core Stack
+
 - Python
 - Pandas
 - NumPy
-- Matplotlib
-- Statsmodels
+- Plotly
 - Streamlit
+- Statsmodels
+- Matplotlib
+- Yahoo Finance API (yfinance)
+
+---
 
 ## Quantitative Finance Concepts
+
 - Statistical Arbitrage
 - Pairs Trading
 - Mean Reversion
-- Z-Score Analysis
-- Cointegration Research
-- Portfolio Optimization
-- Risk Management
+- Rolling Z-Score Modeling
+- Cointegration Analysis
+- Risk-Adjusted Portfolio Optimization
+- Statistical Signal Generation
+- Market-Neutral Trading
+- Quantitative Risk Management
 
 ---
 
@@ -114,10 +171,12 @@ quant-stat-arbitrage-engine/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/quant-stat-arbitrage-engine.git
+git clone https://github.com/KrishnaRai1/quant-stat-arbitrage-engine.git
 
 cd quant-stat-arbitrage-engine
 ```
+
+---
 
 ## Install Dependencies
 
@@ -129,13 +188,15 @@ pip install -r requirements.txt
 
 # Usage
 
-## Run Streamlit Dashboard
+## Launch Institutional Dashboard
 
 ```bash
 streamlit run dashboard/app.py
 ```
 
-## Open Research Notebook
+---
+
+## Open Research Environment
 
 ```bash
 jupyter notebook
@@ -144,53 +205,96 @@ jupyter notebook
 Navigate to:
 
 ```bash
-notebooks/statistical_arbitrage_research.ipynb
+notebooks/
 ```
+
+to explore statistical arbitrage research workflows and quantitative experiments.
 
 ---
 
-# Example Workflow
+# Dashboard Capabilities
 
-1. Load historical equity data
-2. Generate spread between correlated assets
-3. Calculate rolling z-score
-4. Generate trading signals
-5. Backtest strategy performance
-6. Evaluate portfolio analytics
-7. Visualize cumulative returns and equity curves
+The Streamlit terminal supports:
+
+- Dynamic trading pair selection
+- Strategy switching
+- Real-time KPI recalculation
+- Rolling lookback optimization
+- Live spread analysis
+- Correlation heatmap generation
+- Institutional signal monitoring
+- Strategy performance comparison
+- Hyperparameter optimization visualization
+
+All dashboard metrics dynamically react to:
+
+- Trading pair selection
+- Rolling window changes
+- Strategy selection
+- Risk execution profile
+
+---
+
+# Quantitative Workflow
+
+The platform performs the following workflow:
+
+1. Download historical market data
+2. Construct statistical spreads
+3. Calculate rolling z-scores
+4. Generate quantitative signals
+5. Simulate strategy returns
+6. Compute risk-adjusted metrics
+7. Analyze execution confidence
+8. Visualize institutional analytics
 
 ---
 
 # Research Objectives
 
-This project focuses on:
-- Quantitative strategy research
-- Statistical market inefficiency analysis
-- Market-neutral portfolio construction
-- Risk-adjusted return optimization
-- Backtesting infrastructure development
+This repository focuses on:
+
+- Quantitative trading infrastructure
+- Statistical inefficiency analysis
+- Market-neutral execution research
+- Institutional quantitative workflows
+- Risk-adjusted portfolio evaluation
+- Statistical spread modeling
+- Backtesting and research analytics
 
 ---
 
 # Future Improvements
 
-- Live market data integration
-- Automated trade execution simulation
+Planned future enhancements include:
+
+- Live websocket market feeds
+- Real-time execution engine
 - Bayesian parameter optimization
-- Multi-asset portfolio support
-- Advanced risk factor modeling
 - Machine learning signal generation
-- Real-time dashboard analytics
+- Multi-asset portfolio optimization
+- Real-time trade simulation
+- Institutional order book analytics
+- Reinforcement learning execution systems
 
 ---
 
 # Disclaimer
 
-This repository is intended for educational and research purposes only.
+This repository is intended strictly for:
 
-It does not constitute financial advice, investment recommendations, or production-ready trading infrastructure.
+- Educational purposes
+- Quantitative finance research
+- Statistical arbitrage experimentation
+- Portfolio analytics research
 
-Trading financial markets involves substantial risk.
+It does NOT constitute:
+
+- Financial advice
+- Investment recommendations
+- Production-ready trading infrastructure
+
+Trading financial markets involves substantial financial risk.
 
 ---
 
@@ -199,4 +303,18 @@ Trading financial markets involves substantial risk.
 Krishna Rai
 
 GitHub:
+
 https://github.com/KrishnaRai1
+
+---
+# Streamlit Deployment
+
+Live Application:
+
+https://quant-stat-arbitrage-engine-bdiyzezufnyutjujtlpgwq.streamlit.app/
+
+---
+
+# License
+
+This project is intended for research and educational use.
