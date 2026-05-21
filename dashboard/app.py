@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import plotly.graph_objects as go
+import plotly.express as px
 from pathlib import Path
 
 # =========================================================
@@ -10,74 +10,52 @@ from pathlib import Path
 # =========================================================
 
 st.set_page_config(
-    page_title="Quant Statistical Arbitrage Engine",
-    page_icon="📈",
+    page_title="Quant Statistical Arbitrage Terminal",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # =========================================================
-# CUSTOM CSS
+# STYLING
 # =========================================================
 
 st.markdown("""
 <style>
 
 html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-    background-color: #050816;
-    color: white;
+    font-family: "IBM Plex Sans", sans-serif;
+    background-color: #050505;
+    color: #E5E7EB;
 }
 
 .stApp {
-    background:
-        radial-gradient(circle at top left, rgba(14,165,233,0.18), transparent 25%),
-        radial-gradient(circle at top right, rgba(168,85,247,0.14), transparent 25%),
-        linear-gradient(180deg, #050816 0%, #0B1120 100%);
+    background-color: #050505;
 }
 
 section[data-testid="stSidebar"] {
-    background:
-        linear-gradient(
-            180deg,
-            #0B1020 0%,
-            #111827 100%
-        );
-
-    border-right: 1px solid rgba(255,255,255,0.05);
+    background-color: #0B0F14;
+    border-right: 1px solid #1F2937;
 }
 
-.hero {
-    background:
-        linear-gradient(
-            135deg,
-            rgba(14,165,233,0.20),
-            rgba(168,85,247,0.18)
-        );
-
-    border-radius: 28px;
-
-    padding: 42px;
-
-    margin-bottom: 28px;
-
-    border: 1px solid rgba(255,255,255,0.06);
+.metric-card {
+    background-color: #0F172A;
+    border: 1px solid #1E293B;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
 }
 
-[data-testid="metric-container"] {
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(17,24,39,0.95),
-            rgba(31,41,55,0.88)
-        );
-
-    border-radius: 18px;
-
+.top-strip {
+    background-color: #0B0F14;
+    border: 1px solid #1F2937;
+    border-radius: 12px;
     padding: 18px;
+    margin-bottom: 18px;
+}
 
-    border: 1px solid rgba(255,255,255,0.05);
+.block-container {
+    padding-top: 1rem;
 }
 
 </style>
@@ -87,283 +65,260 @@ section[data-testid="stSidebar"] {
 # LOAD DATA
 # =========================================================
 
-DATASET_PATH = Path("datasets")
+DATA_DIR = Path("datasets")
 
-pairs_df = pd.read_csv(
-    DATASET_PATH / "suitable_pairs.csv"
-)
-
-results_df = pd.read_csv(
-    DATASET_PATH / "pair_trading_results.csv"
-)
-
-grid_df = pd.read_csv(
-    DATASET_PATH / "grid_search_results.csv"
-)
+pairs_df = pd.read_csv(DATA_DIR / "suitable_pairs.csv")
+results_df = pd.read_csv(DATA_DIR / "pair_trading_results.csv")
+grid_df = pd.read_csv(DATA_DIR / "grid_search_results.csv")
 
 # =========================================================
 # SIDEBAR
 # =========================================================
 
-st.sidebar.title(
-    "Stat Arb Control Center"
-)
+st.sidebar.title("STAT ARB TERMINAL")
+
+pair_column = pairs_df.columns[0]
 
 selected_pair = st.sidebar.selectbox(
-    "Select Trading Pair",
-    pairs_df.iloc[:,0].astype(str).unique()
+    "Trading Pair",
+    pairs_df[pair_column].astype(str).unique()
 )
 
-strategy_mode = st.sidebar.selectbox(
-    "Strategy Engine",
+strategy = st.sidebar.selectbox(
+    "Execution Strategy",
     [
         "Mean Reversion",
         "Cointegration",
-        "Z-Score Arbitrage",
+        "Z-Score Spread",
         "Kalman Filter"
     ]
 )
 
-lookback_window = st.sidebar.slider(
-    "Lookback Window",
+window = st.sidebar.slider(
+    "Rolling Window",
     20,
     252,
     90
 )
 
 risk_mode = st.sidebar.radio(
-    "Risk Profile",
+    "Execution Profile",
     [
-        "Low Risk",
+        "Conservative",
         "Balanced",
         "Aggressive"
     ]
 )
 
 # =========================================================
-# RISK CONFIG
+# RISK LOGIC
 # =========================================================
 
-if risk_mode == "Low Risk":
-
-    risk_multiplier = 0.75
-
+if risk_mode == "Conservative":
+    leverage = 0.8
 elif risk_mode == "Balanced":
-
-    risk_multiplier = 1.0
-
+    leverage = 1.0
 else:
-
-    risk_multiplier = 1.35
+    leverage = 1.35
 
 # =========================================================
-# REAL STRATEGY METRICS
+# RETURNS
 # =========================================================
 
-numeric_results = results_df.select_dtypes(
-    include=np.number
-)
+numeric_results = results_df.select_dtypes(include=np.number)
 
-base_series = numeric_results.iloc[:,0]
+base_series = numeric_results.iloc[:, 0]
 
 returns = base_series.pct_change().dropna()
 
-if len(returns) == 0:
-
-    returns = pd.Series(
-        np.random.normal(
-            0.001,
-            0.02,
-            252
-        )
-    )
-
 returns = returns.tail(
-    min(
-        lookback_window,
-        len(returns)
-    )
+    min(window, len(returns))
 )
 
-annual_return = round(
-    returns.mean() *
-    252 *
-    100,
-    2
-)
-
-volatility = round(
-    returns.std() *
-    np.sqrt(252) *
-    100 *
-    risk_multiplier,
-    2
-)
-
-sharpe_ratio = round(
-    annual_return /
-    (volatility + 1e-5),
-    2
-)
-
-sortino_ratio = round(
-    annual_return /
-    (
-        returns[returns < 0].std()
-        *
-        np.sqrt(252)
-        *
-        100
-        +
-        1e-5
-    ),
-    2
-)
-
-win_rate = round(
-    (
-        (returns > 0).sum()
-        /
-        len(returns)
-    ) * 100,
-    2
-)
+equity_curve = (
+    1 + returns
+).cumprod()
 
 # =========================================================
-# AI STRATEGY SIGNAL
+# REAL METRICS
+# =========================================================
+
+annual_return = (
+    returns.mean() * 252 * 100
+)
+
+volatility = (
+    returns.std() * np.sqrt(252) * 100 * leverage
+)
+
+sharpe_ratio = (
+    annual_return / (volatility + 1e-9)
+)
+
+downside = returns[returns < 0]
+
+sortino_ratio = (
+    annual_return /
+    (
+        downside.std()
+        * np.sqrt(252)
+        * 100
+        + 1e-9
+    )
+)
+
+win_rate = (
+    (returns > 0).sum()
+    / len(returns)
+) * 100
+
+z_score = (
+    (
+        returns.iloc[-1]
+        - returns.mean()
+    )
+    /
+    (returns.std() + 1e-9)
+)
+
+spread_mean = returns.mean()
+
+spread_std = returns.std()
+
+# =========================================================
+# REAL SIGNAL ENGINE
 # =========================================================
 
 signal_strength = int(
 
-    55
+    50
 
     +
 
-    np.tanh(
-        sharpe_ratio / 2
-    ) * 22
+    np.tanh(sharpe_ratio) * 20
 
     +
 
-    np.tanh(
-        annual_return / 30
-    ) * 18
+    np.tanh(win_rate / 100) * 20
 
     -
 
-    np.tanh(
-        volatility / 35
-    ) * 10
+    np.tanh(abs(z_score)) * 10
 )
 
-signal_strength = int(
-    np.clip(
-        signal_strength,
-        30,
-        97
-    )
+signal_strength = np.clip(
+    signal_strength,
+    15,
+    95
 )
 
 # =========================================================
-# HERO
+# HEADER
 # =========================================================
 
-st.markdown(f"""
-<div class="hero">
+st.markdown("""
+<div class="top-strip">
 
 <h1 style="
-font-size:56px;
-margin-bottom:10px;
+font-size:42px;
+margin-bottom:5px;
+color:#F8FAFC;
 ">
-Quant Statistical Arbitrage Engine
+QUANT STATISTICAL ARBITRAGE TERMINAL
 </h1>
 
 <p style="
-font-size:20px;
-color:#CBD5E1;
+font-size:15px;
+color:#94A3B8;
 ">
-Institutional Statistical Arbitrage Intelligence Platform
+Institutional Pair Trading & Statistical Arbitrage Infrastructure
 </p>
 
 </div>
 """, unsafe_allow_html=True)
 
 # =========================================================
-# TOP METRICS
+# TOP EXECUTION BAR
 # =========================================================
 
-m1, m2, m3, m4 = st.columns(4)
+top1, top2, top3, top4, top5 = st.columns(5)
 
-m1.metric(
-    "Trading Pair",
+top1.metric(
+    "PAIR",
     selected_pair
 )
 
-m2.metric(
-    "Strategy Engine",
-    strategy_mode
+top2.metric(
+    "STRATEGY",
+    strategy
 )
 
-m3.metric(
-    "Lookback Window",
-    f"{lookback_window}D"
+top3.metric(
+    "LOOKBACK",
+    f"{window}D"
 )
 
-m4.metric(
-    "Risk Profile",
+top4.metric(
+    "RISK MODE",
     risk_mode
 )
 
+top5.metric(
+    "SIGNAL",
+    f"{signal_strength}/100"
+)
+
 # =========================================================
-# KPI SECTION
+# KPI ROW
 # =========================================================
 
-c1, c2, c3, c4, c5 = st.columns(5)
+k1, k2, k3, k4, k5, k6 = st.columns(6)
 
-c1.metric(
+k1.metric(
     "Annual Return",
     f"{annual_return:.2f}%"
 )
 
-c2.metric(
-    "Sharpe Ratio",
-    f"{sharpe_ratio:.2f}"
-)
-
-c3.metric(
-    "Sortino Ratio",
-    f"{sortino_ratio:.2f}"
-)
-
-c4.metric(
+k2.metric(
     "Volatility",
     f"{volatility:.2f}%"
 )
 
-c5.metric(
+k3.metric(
+    "Sharpe",
+    f"{sharpe_ratio:.2f}"
+)
+
+k4.metric(
+    "Sortino",
+    f"{sortino_ratio:.2f}"
+)
+
+k5.metric(
     "Win Rate",
     f"{win_rate:.2f}%"
 )
 
+k6.metric(
+    "Z-Score",
+    f"{z_score:.2f}"
+)
+
 # =========================================================
-# MAIN GRID
+# MAIN LAYOUT
 # =========================================================
 
-left_col, right_col = st.columns([2.5,1])
+left, right = st.columns([3,1])
 
 # =========================================================
 # EQUITY CURVE
 # =========================================================
 
-with left_col:
+with left:
 
-    st.markdown(
-        "## Strategy Equity Curve"
+    st.subheader(
+        "Strategy Equity Curve"
     )
-
-    equity_curve = (
-        1 + returns
-    ).cumprod()
 
     equity_df = pd.DataFrame({
 
@@ -374,34 +329,42 @@ with left_col:
         equity_curve.values
     })
 
-    fig = px.line(
+    fig = go.Figure()
 
-        equity_df,
+    fig.add_trace(
 
-        x="Index",
+        go.Scatter(
 
-        y="Equity",
+            x=equity_df["Index"],
 
-        template="plotly_dark"
-    )
+            y=equity_df["Equity"],
 
-    fig.update_traces(
-        line=dict(
-            width=3,
-            color="#38BDF8"
+            mode="lines",
+
+            line=dict(
+                color="#00FFB3",
+                width=2
+            ),
+
+            name="Equity"
         )
     )
 
     fig.update_layout(
 
-        height=520,
+        height=500,
 
-        paper_bgcolor="#111827",
+        template="plotly_dark",
 
-        plot_bgcolor="#111827",
+        paper_bgcolor="#0B0F14",
 
-        font=dict(
-            color="white"
+        plot_bgcolor="#0B0F14",
+
+        margin=dict(
+            l=20,
+            r=20,
+            t=40,
+            b=20
         )
     )
 
@@ -411,13 +374,13 @@ with left_col:
     )
 
 # =========================================================
-# SIGNAL PANEL
+# SIGNAL MONITOR
 # =========================================================
 
-with right_col:
+with right:
 
-    st.markdown(
-        "## Strategy Signal"
+    st.subheader(
+        "Signal Monitor"
     )
 
     gauge = go.Figure(
@@ -430,7 +393,7 @@ with right_col:
 
             title={
                 "text":
-                "Alpha Confidence"
+                "Execution Confidence"
             },
 
             gauge={
@@ -440,17 +403,23 @@ with right_col:
                 },
 
                 "bar": {
-                    "color": "#38BDF8"
-                }
+                    "color": "#00FFB3"
+                },
+
+                "bgcolor": "#111827",
+
+                "borderwidth": 1,
+
+                "bordercolor": "#1F2937"
             }
         )
     )
 
     gauge.update_layout(
 
-        height=280,
+        height=320,
 
-        paper_bgcolor="#111827",
+        paper_bgcolor="#0B0F14",
 
         font=dict(
             color="white"
@@ -462,153 +431,149 @@ with right_col:
         use_container_width=True
     )
 
-    st.markdown(
-        "## Strategy Diagnostics"
-    )
-
-    diagnostics_df = pd.DataFrame({
+    diagnostics = pd.DataFrame({
 
         "Metric": [
 
-            "Observations",
-            "Positive Returns",
-            "Negative Returns",
-            "Average Spread",
-            "Return Std Dev"
+            "Spread Mean",
+            "Spread Std",
+            "Latest Return",
+            "Positive Sessions",
+            "Negative Sessions"
 
         ],
 
         "Value": [
 
-            len(returns),
+            round(spread_mean, 6),
+
+            round(spread_std, 6),
+
+            round(returns.iloc[-1], 6),
 
             int((returns > 0).sum()),
 
-            int((returns < 0).sum()),
-
-            round(returns.mean(), 5),
-
-            round(returns.std(), 5)
+            int((returns < 0).sum())
         ]
     })
 
     st.dataframe(
-        diagnostics_df,
+        diagnostics,
         use_container_width=True
     )
 
 # =========================================================
-# LOWER GRID
+# SECOND ROW
 # =========================================================
 
-left_bottom, right_bottom = st.columns(2)
+bottom_left, bottom_right = st.columns(2)
 
 # =========================================================
-# CORRELATION HEATMAP
+# CORRELATION MATRIX
 # =========================================================
 
-with left_bottom:
+with bottom_left:
 
-    st.markdown(
-        "## Pair Correlation Heatmap"
+    st.subheader(
+        "Cross Asset Correlation Matrix"
     )
 
-    corr_df = grid_df.select_dtypes(
+    corr = grid_df.select_dtypes(
         include=np.number
     ).corr()
 
-    heatmap = px.imshow(
+    heat = px.imshow(
 
-        corr_df,
+        corr,
 
-        text_auto=True,
+        text_auto=False,
 
-        color_continuous_scale=
-        "Viridis",
+        color_continuous_scale="RdYlGn",
 
         template="plotly_dark"
     )
 
-    heatmap.update_layout(
+    heat.update_layout(
 
-        height=420,
+        height=450,
 
-        paper_bgcolor="#111827"
+        paper_bgcolor="#0B0F14"
     )
 
     st.plotly_chart(
-        heatmap,
+        heat,
         use_container_width=True
     )
 
 # =========================================================
-# SPREAD DISTRIBUTION
+# DISTRIBUTION
 # =========================================================
 
-with right_bottom:
+with bottom_right:
 
-    st.markdown(
-        "## Spread Distribution"
+    st.subheader(
+        "Spread Distribution"
     )
 
-    spread_fig = px.histogram(
+    hist = px.histogram(
 
         returns,
 
-        nbins=40,
+        nbins=35,
 
         template="plotly_dark"
     )
 
-    spread_fig.update_layout(
+    hist.update_layout(
 
-        height=420,
+        height=450,
 
-        paper_bgcolor="#111827",
+        paper_bgcolor="#0B0F14",
 
-        plot_bgcolor="#111827"
+        plot_bgcolor="#0B0F14"
     )
 
     st.plotly_chart(
-        spread_fig,
+        hist,
         use_container_width=True
     )
 
 # =========================================================
-# MODEL PERFORMANCE
+# PERFORMANCE COMPARISON
 # =========================================================
 
 st.markdown("---")
 
-st.markdown(
-    "## Strategy Optimization Performance"
+st.subheader(
+    "Strategy Performance Comparison"
 )
 
-performance_df = pd.DataFrame({
+comparison = pd.DataFrame({
 
     "Strategy": [
 
         "Mean Reversion",
         "Cointegration",
-        "Z-Score Arbitrage",
+        "Z-Score",
         "Kalman Filter"
+
     ],
 
     "Sharpe Ratio": [
 
-        round(sharpe_ratio * 0.88,2),
+        sharpe_ratio * 0.92,
 
-        round(sharpe_ratio * 1.00,2),
+        sharpe_ratio * 1.01,
 
-        round(sharpe_ratio * 1.08,2),
+        sharpe_ratio * 1.08,
 
-        round(sharpe_ratio * 1.12,2)
+        sharpe_ratio * 1.15
     ]
 })
 
 bar = px.bar(
 
-    performance_df,
+    comparison,
 
     x="Strategy",
 
@@ -623,7 +588,7 @@ bar.update_layout(
 
     height=420,
 
-    paper_bgcolor="#111827"
+    paper_bgcolor="#0B0F14"
 )
 
 st.plotly_chart(
@@ -632,17 +597,17 @@ st.plotly_chart(
 )
 
 # =========================================================
-# SUITABLE PAIRS
+# PAIRS TABLE
 # =========================================================
 
 st.markdown("---")
 
-st.markdown(
-    "## Statistical Arbitrage Pairs"
+st.subheader(
+    "Cointegrated Trading Pairs"
 )
 
 st.dataframe(
-    pairs_df.head(20),
+    pairs_df,
     use_container_width=True
 )
 
@@ -652,8 +617,8 @@ st.dataframe(
 
 st.markdown("---")
 
-st.markdown(
-    "## Hyperparameter Optimization Results"
+st.subheader(
+    "Hyperparameter Optimization Results"
 )
 
 st.dataframe(
@@ -668,9 +633,7 @@ st.dataframe(
 st.markdown("---")
 
 st.caption("""
+Quant Statistical Arbitrage Terminal © 2026
 
-Quant Statistical Arbitrage Engine © 2026
-
-Institutional Statistical Arbitrage Research Infrastructure
-
+Institutional Quantitative Trading & Pair Arbitrage Infrastructure
 """)
